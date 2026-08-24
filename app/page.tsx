@@ -81,7 +81,7 @@ return ( <main className="min-h-screen bg-[#050505] text-white">
           Gifts
         </button>
 
-        <button onClick={() => router.push("/world-cup")} className="text-white/60 hover:text-white">
+        <button onClick={() => router.push("/bracket")} className="text-white/60 hover:text-white">
           World Cup
         </button>
       </div>
