@@ -4,6 +4,7 @@ import {
   getSavedResults,
   saveMatchResult,
   clearMatchResult,
+  SavedMatchResult,
 } from "../../data/results";
 import {
   calculateAllStandings,
