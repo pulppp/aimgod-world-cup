@@ -2,17 +2,24 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { createClient } from "../../utils/supabase/client";
 
 export default function JoinPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   const [form, setForm] = useState({
     creatorName: "",
     tiktokUsername: "",
+    email: "",
+    password: "",
     country: "",
     region: "",
     club: "",
   });
+
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -23,38 +30,65 @@ export default function JoinPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Temporary storage until we connect a real database
-    localStorage.setItem("aimgod-player", JSON.stringify(form));
+    setLoading(true);
+    setMessage("");
 
-    router.push("/matches");
+    const { data, error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/matches`,
+        data: {
+          creator_name: form.creatorName,
+          tiktok_username: form.tiktokUsername,
+          country: form.country,
+          region: form.region,
+          club: form.club,
+        },
+      },
+    });
+
+    if (error) {
+      setMessage(error.message);
+      setLoading(false);
+      return;
+    }
+
+    if (data.user) {
+      setMessage(
+        "AIMGOD account created. Check your email and click the verification link to activate your account."
+      );
+    }
+
+    setLoading(false);
   };
 
   return (
-    <main className="min-h-screen bg-black text-white px-6 py-12">
-      <div className="max-w-xl mx-auto">
-        <div className="text-center mb-10">
-          <p className="text-yellow-400 font-bold tracking-widest">
+    <main className="min-h-screen bg-black px-6 py-12 text-white">
+      <div className="mx-auto max-w-xl">
+        <div className="mb-10 text-center">
+          <p className="font-bold tracking-widest text-yellow-400">
             AIMGOD WORLD CUP
           </p>
 
-          <h1 className="text-4xl font-black mt-3">
+          <h1 className="mt-3 text-4xl font-black">
             ENTER THE WORLD CUP
           </h1>
 
-          <p className="text-gray-400 mt-3">
-            Create your competitor profile and represent your country.
+          <p className="mt-3 text-gray-400">
+            Create your AIMGOD account and competitor profile.
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 bg-zinc-900 border border-zinc-800 rounded-2xl p-6"
+          className="space-y-5 rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
         >
           <div>
-            <label className="block mb-2 font-semibold">
+            <label className="mb-2 block font-semibold">
               Creator Name
             </label>
 
@@ -64,12 +98,12 @@ export default function JoinPage() {
               onChange={handleChange}
               required
               placeholder="Creator X"
-              className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+              className="w-full rounded-xl border border-zinc-700 bg-black p-3"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-semibold">
+            <label className="mb-2 block font-semibold">
               TikTok Username
             </label>
 
@@ -79,12 +113,45 @@ export default function JoinPage() {
               onChange={handleChange}
               required
               placeholder="@username"
-              className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+              className="w-full rounded-xl border border-zinc-700 bg-black p-3"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-semibold">
+            <label className="mb-2 block font-semibold">
+              Email
+            </label>
+
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              placeholder="you@example.com"
+              className="w-full rounded-xl border border-zinc-700 bg-black p-3"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block font-semibold">
+              Password
+            </label>
+
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              minLength={8}
+              placeholder="Minimum 8 characters"
+              className="w-full rounded-xl border border-zinc-700 bg-black p-3"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block font-semibold">
               Country
             </label>
 
@@ -94,12 +161,12 @@ export default function JoinPage() {
               onChange={handleChange}
               required
               placeholder="Jamaica"
-              className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+              className="w-full rounded-xl border border-zinc-700 bg-black p-3"
             />
           </div>
 
           <div>
-            <label className="block mb-2 font-semibold">
+            <label className="mb-2 block font-semibold">
               League
             </label>
 
@@ -108,7 +175,7 @@ export default function JoinPage() {
               value={form.region}
               onChange={handleChange}
               required
-              className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+              className="w-full rounded-xl border border-zinc-700 bg-black p-3"
             >
               <option value="">Choose league</option>
               <option value="caribbean">Caribbean</option>
@@ -121,7 +188,7 @@ export default function JoinPage() {
           </div>
 
           <div>
-            <label className="block mb-2 font-semibold">
+            <label className="mb-2 block font-semibold">
               Club
             </label>
 
@@ -129,7 +196,7 @@ export default function JoinPage() {
               name="club"
               value={form.club}
               onChange={handleChange}
-              className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+              className="w-full rounded-xl border border-zinc-700 bg-black p-3"
             >
               <option value="">Independent / No Club</option>
               <option value="third-eye">Third Eye FC</option>
@@ -139,11 +206,18 @@ export default function JoinPage() {
             </select>
           </div>
 
+          {message && (
+            <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 p-4 text-sm text-yellow-200">
+              {message}
+            </div>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-yellow-400 text-black font-black text-lg rounded-xl py-4 hover:scale-[1.02] transition"
+            disabled={loading}
+            className="w-full rounded-xl bg-yellow-400 py-4 text-lg font-black text-black transition hover:scale-[1.02] disabled:opacity-50"
           >
-            ENTER AIMGOD
+            {loading ? "CREATING ACCOUNT..." : "ENTER AIMGOD"}
           </button>
         </form>
       </div>
